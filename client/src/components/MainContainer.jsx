@@ -14,7 +14,6 @@ export default function MainContainer() {
       <HorizontalStepper />
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        severity='error'
         open={Boolean(message)}
         onClose={() => dispatch(reset())}
         autoHideDuration={6000}

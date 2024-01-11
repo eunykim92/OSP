@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   userImage: null,
   components: [],
+  created_at: null,
 };
 
 const designSlice = createSlice({
@@ -17,25 +18,27 @@ const designSlice = createSlice({
         x_position: 0,
         y_position: 0,
         z_index: 0,
-        styles: { position: 'relative', height: '100vh', width: '100wh' },
+        styles: { position: 'relative', height: '100vh', width: '100vw' },
         props: {},
         hooks: {},
       };
       if (state.components.length === 0) {
         state.components = [...state.components, mainContainer];
+        state.created_at = new Date().toISOString();
       }
       console.log('state.components in design Slice are', state.components);
     },
     addComponent: (state, action) => {
       const newComponent = {
         name: action.payload,
-        parent: null,
+        parent: 0,
         x_position: 0,
         y_position: 0,
         z_index: 0,
         props: {},
         hooks: {},
         styles: { position: 'absolute' },
+        created_at: new Date().toISOString(),
       };
       state.components = [...state.components, newComponent];
     },
@@ -45,9 +48,14 @@ const designSlice = createSlice({
         idx !== childIdx ? item : { ...item, parent: parentIdx }
       );
     },
+    removeComponent: (state, action) => {
+      const idx = action.payload;
+      state.components.splice(idx, 1);
+    },
   },
 });
 
-export const { startDesign, addComponent, setParent } = designSlice.actions;
+export const { startDesign, addComponent, setParent, removeComponent } =
+  designSlice.actions;
 
 export default designSlice.reducer;
