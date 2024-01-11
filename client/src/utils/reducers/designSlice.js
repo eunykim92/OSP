@@ -4,6 +4,8 @@ const initialState = {
   userImage: null,
   components: [],
   created_at: null,
+  // i added this
+  selectedComponent: null,
 };
 
 const designSlice = createSlice({
@@ -52,10 +54,14 @@ const designSlice = createSlice({
       const idx = action.payload;
       state.components.splice(idx, 1);
     },
+    // i added this
+    selectComponent: (state, action) => {
+      state.selectedComponent = action.payload;
+    }
   },
 });
 
-export const { startDesign, addComponent, setParent, removeComponent } =
+export const { startDesign, addComponent, setParent, removeComponent, selectComponent } =
   designSlice.actions;
 
 export default designSlice.reducer;
