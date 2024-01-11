@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import { useSelector, useDispatch } from 'react-redux';
-import { useDispatch, useSelector } from 'react-redux';
-
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -19,8 +17,6 @@ export default function WorkspaceLeft() {
   const [selectedIdx, setSelectedIdx] = useState(null);
   const components = useSelector((state) => state.design.components);
   console.log('components in WorkspaceLeft: ', components);
-
-  const dispatch = useDispatch();
   // need this to use in KonvaStage
   const selectedComponent = useSelector(state => state.design.selectComponent);
 
