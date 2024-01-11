@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -11,10 +11,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ParentSelector from './userInputs/ParentSelector';
 import AddNewComponent from './userInputs/AddNewComponent';
+import ComponentEditor from './userInputs/ComponentEditor';
 
 export default function WorkspaceLeft() {
   const [selectedIdx, setSelectedIdx] = useState(null);
   const components = useSelector((state) => state.design.components);
+  console.log('components in WorkspaceLeft: ', components);
   return (
     <Box>
       <AddNewComponent setSelectedIdx={setSelectedIdx} />
@@ -37,6 +39,7 @@ function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
   const childrenNum = useSelector((state) => state.design.components).filter(
     (item) => item.parent === idx
   ).length;
+  const [openEditor, setOpenEditor] = useState(false);
   return (
     <ListItemButton
       selected={selected}
@@ -50,9 +53,17 @@ function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <ListItemText primary={component.name} />
-        <IconButton sx={{ marginLeft: '20px' }}>
+        <IconButton
+          sx={{ marginLeft: '20px' }}
+          onClick={() => setOpenEditor(true)}
+        >
           <EditIcon />
         </IconButton>
+        <ComponentEditor
+          idx={idx}
+          open={openEditor}
+          closeEditor={() => setOpenEditor(false)}
+        />
 
         {idx > 0 && (
           <Delete
@@ -69,6 +80,7 @@ function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
 }
 
 function Delete({ name, idx, canDelete }) {
+  const dispatch = useDispatch();
   const message = canDelete
     ? {
         severity: 'success',

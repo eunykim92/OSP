@@ -5,11 +5,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
 import TopBar from './components/TopBar';
-import SideBar from './components/SideBar';
 import MainContainer from './components/MainContainer';
-import { dark } from '@mui/material/styles/createPalette';
 
 export default function App() {
   const sessionID = Cookies.get('sessionID');

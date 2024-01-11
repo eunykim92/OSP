@@ -70,7 +70,7 @@ export default function ParentSelector({ childIdx }) {
           dispatch(
             setMessage({
               severity: 'error',
-              text: "'MainContaienr' has to be the root component",
+              text: "'MainContainer' has to be the root component",
             })
           )
         }
@@ -80,7 +80,7 @@ export default function ParentSelector({ childIdx }) {
           id='parent'
           label='parent'
           defaultValue='null'
-          variant='standard'
+          variant='outlined'
         />
       </Button>
     );
