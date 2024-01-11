@@ -20,15 +20,17 @@ const designSlice = createSlice({
         x_position: 0,
         y_position: 0,
         z_index: 0,
-        styles: { position: 'relative', height: '100vh', width: '100vw' },
-        props: {},
-        hooks: {},
+        styles: [
+          { key: 'height', value: '100vh' },
+          { key: 'width', value: '100vw' },
+        ],
+        props: [],
+        hooks: [],
       };
       if (state.components.length === 0) {
         state.components = [...state.components, mainContainer];
         state.created_at = new Date().toISOString();
       }
-      console.log('state.components in design Slice are', state.components);
     },
     addComponent: (state, action) => {
       const newComponent = {
@@ -37,9 +39,9 @@ const designSlice = createSlice({
         x_position: 0,
         y_position: 0,
         z_index: 0,
-        props: {},
-        hooks: {},
-        styles: { position: 'absolute' },
+        props: [],
+        hooks: [],
+        styles: [],
         created_at: new Date().toISOString(),
       };
       state.components = [...state.components, newComponent];
@@ -57,11 +59,23 @@ const designSlice = createSlice({
     // i added this
     selectComponent: (state, action) => {
       state.selectedComponent = action.payload;
-    }
+    },
+    updateComponent: (state, action) => {
+      const { idx, updatedComponent } = action.payload;
+      state.components = state.components.map((item, i) =>
+        i !== idx ? item : Object.assign(item, updatedComponent)
+      );
+    },
   },
 });
 
-export const { startDesign, addComponent, setParent, removeComponent, selectComponent } =
-  designSlice.actions;
+export const {
+  startDesign,
+  addComponent,
+  setParent,
+  removeComponent,
+  selectComponent,
+  updateComponent,
+} = designSlice.actions;
 
 export default designSlice.reducer;
