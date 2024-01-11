@@ -6,8 +6,9 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import UserImageUpload from './UserImageUpload';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Workspace from './Workspace';
+import { startDesign } from '../utils/reducers/designSlice';
 
 const steps = [
   'Upload your design',
@@ -17,27 +18,8 @@ const steps = [
 
 export default function HorizontalStepper() {
   const [activeStep, setActiveStep] = useState(0);
-  const [skipped, setSkipped] = useState(new Set());
   const userImage = useSelector((state) => state.design.userImage);
-
-  const isStepSkipped = (step) => {
-    return skipped.has(step);
-  };
-
-  const handleNext = () => {
-    let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-      newSkipped = new Set(newSkipped.values());
-      newSkipped.delete(activeStep);
-    }
-
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
+  const dispatch = useDispatch();
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -61,7 +43,7 @@ export default function HorizontalStepper() {
         <Button
           color='inherit'
           disabled={activeStep === 0}
-          onClick={handleBack}
+          onClick={() => setActiveStep(activeStep - 1)}
           sx={{ mr: 1 }}
         >
           Back
@@ -69,8 +51,12 @@ export default function HorizontalStepper() {
         <Box sx={{ flex: '1 1 auto' }} />
 
         <Button
-          onClick={handleNext}
-          // disabled={activeStep === 0 && !userImage}
+          onClick={() => {
+            setActiveStep(activeStep + 1);
+            if (activeStep === 0 && !userImage) {
+              dispatch(startDesign(null));
+            }
+          }}
         >
           {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
         </Button>
