@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import { useSelector } from 'react-redux';
 import WorkspaceLeft from './WorkspaceLeft';
 import WorkspaceRight from './WorkspaceRight';
+import KonvaStage from './KonvaStage';
 
 export default function Workspace() {
   const userImage = useSelector((state) => state.design.userImage);
@@ -12,7 +13,8 @@ export default function Workspace() {
         <WorkspaceLeft />
       </Box>
       <Box gridColumn='span 8'>
-        <img src={userImage} style={{ maxWidth: '100%' }} />
+        {/* <img src={userImage} style={{ maxWidth: '100%' }} /> */}
+        {userImage && <KonvaStage userImage={userImage} />}
       </Box>
       <Box gridColumn='span 2'>
         <WorkspaceRight />

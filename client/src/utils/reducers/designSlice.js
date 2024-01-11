@@ -4,6 +4,8 @@ const initialState = {
   userImage: null,
   components: [],
   created_at: null,
+  // i added this
+  selectedComponent: null,
 };
 
 const designSlice = createSlice({
@@ -54,6 +56,10 @@ const designSlice = createSlice({
       const idx = action.payload;
       state.components.splice(idx, 1);
     },
+    // i added this
+    selectComponent: (state, action) => {
+      state.selectedComponent = action.payload;
+    },
     updateComponent: (state, action) => {
       const { idx, updatedComponent } = action.payload;
       state.components = state.components.map((item, i) =>
@@ -68,6 +74,7 @@ export const {
   addComponent,
   setParent,
   removeComponent,
+  selectComponent,
   updateComponent,
 } = designSlice.actions;
 

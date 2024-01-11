@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
+import { useSelector, useDispatch } from 'react-redux';
 import { useDispatch, useSelector } from 'react-redux';
+
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { removeComponent } from '../utils/reducers/designSlice';
+import { removeComponent, selectComponent } from '../utils/reducers/designSlice';
 import { setMessage } from '../utils/reducers/appSlice';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -17,6 +19,23 @@ export default function WorkspaceLeft() {
   const [selectedIdx, setSelectedIdx] = useState(null);
   const components = useSelector((state) => state.design.components);
   console.log('components in WorkspaceLeft: ', components);
+
+  const dispatch = useDispatch();
+  // need this to use in KonvaStage
+  const selectedComponent = useSelector(state => state.design.selectComponent);
+
+  // updated selectedIdx based on the selectedComponent from the redux state
+  useEffect(() => {
+    const idx = components.findIndex(c => c.name === selectedComponent);
+    // if (idx !== -1) {
+    //   setSelectedIdx(idx);
+    // }
+    setSelectedIdx(idx);
+  }, [selectedComponent, components]);
+
+
+  console.log('components in WorkspaceLeft: ', components);
+  
   return (
     <Box>
       <AddNewComponent setSelectedIdx={setSelectedIdx} />
@@ -36,14 +55,25 @@ export default function WorkspaceLeft() {
 }
 
 function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
+  const dispatch = useDispatch();
   const childrenNum = useSelector((state) => state.design.components).filter(
     (item) => item.parent === idx
   ).length;
+
+  const onClickHandler = () => {
+    handleListItemClick(idx);
+    dispatch(selectComponent(component.name));
+  }
+
+
   const [openEditor, setOpenEditor] = useState(false);
+
   return (
     <ListItemButton
       selected={selected}
-      onClick={() => handleListItemClick(idx)}
+      // onClick={() => handleListItemClick(idx)}
+      // i added this
+      onClick={onClickHandler}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -90,6 +120,7 @@ function Delete({ name, idx, canDelete }) {
         severity: 'error',
         text: `Component ${name} has children. Failed to remove`,
       };
+
   return (
     <IconButton
       onClick={() => {
