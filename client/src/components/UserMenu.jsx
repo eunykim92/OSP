@@ -124,8 +124,8 @@ export default function UserMenu() {
         <Modal
           open={modal}
           onClose={() => setModal(false)}
-          aria-labelledby='modal-modal-title'
-          aria-describedby='modal-modal-description'
+          aria-labelledby='modal-user-menu'
+          aria-describedby='modal-user-menu'
         >
           <Box sx={style}>
             <Typography id='modal-modal-title' variant='h6' component='h2'>

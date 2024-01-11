@@ -6,7 +6,6 @@ import WorkspaceRight from './WorkspaceRight';
 
 export default function Workspace() {
   const userImage = useSelector((state) => state.design.userImage);
-  console.log('Step2-workspace');
   return (
     <Box display='grid' gridTemplateColumns='repeat(12, 1fr)' gap={2}>
       <Box gridColumn='span 2'>
