@@ -1,74 +1,30 @@
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import IconButton from '@mui/material/IconButton';
-import { useDispatch, useSelector } from 'react-redux';
-import MenuItem from '@mui/material/MenuItem';
+import { useSelector } from 'react-redux';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { addComponent, setParent } from '../utils/reducers/designSlice';
+import { removeComponent } from '../utils/reducers/designSlice';
 import { setMessage } from '../utils/reducers/appSlice';
-import { Button } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import ParentSelector from './userInputs/ParentSelector';
+import AddNewComponent from './userInputs/AddNewComponent';
 
 export default function WorkspaceLeft() {
-  const components = useSelector((state) => state.design.components);
-  console.log('components are: ', components);
-  const dispatch = useDispatch();
   const [selectedIdx, setSelectedIdx] = useState(null);
-
-  function handleListItemClick(idx) {
-    setSelectedIdx(idx);
-  }
-
+  const components = useSelector((state) => state.design.components);
   return (
     <Box>
-      <form
-        style={{ display: 'flex' }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          const name = e.target.newComponent.value;
-          if (name.length === 0) {
-            dispatch(
-              setMessage({
-                severity: 'error',
-                text: 'React component name cannot be empty.',
-              })
-            );
-          } else {
-            const firstLetter = name[0];
-            if (firstLetter === firstLetter.toLowerCase()) {
-              dispatch(
-                setMessage({
-                  severity: 'error',
-                  text: 'React component name must start with an uppercase letter.',
-                })
-              );
-            } else {
-              dispatch(addComponent(e.target.newComponent.value));
-              setSelectedIdx(components.length);
-            }
-          }
-        }}
-      >
-        <TextField
-          id='new-component'
-          name='newComponent'
-          label='New Component'
-          variant='outlined'
-        />
-        <IconButton type='submit'>
-          <AddCircleIcon />
-        </IconButton>
-      </form>
+      <AddNewComponent setSelectedIdx={setSelectedIdx} />
       <List>
         {components.map((item, idx) => (
           <ComponentDisplay
             component={item}
             key={idx}
             idx={idx}
-            handleListItemClick={handleListItemClick}
+            handleListItemClick={() => setSelectedIdx(idx)}
             selected={selectedIdx === idx}
           />
         ))}
@@ -78,6 +34,9 @@ export default function WorkspaceLeft() {
 }
 
 function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
+  const childrenNum = useSelector((state) => state.design.components).filter(
+    (item) => item.parent === idx
+  ).length;
   return (
     <ListItemButton
       selected={selected}
@@ -89,68 +48,46 @@ function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
         width: '100%',
       }}
     >
-      <ListItemText primary={component.name} />
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <ListItemText primary={component.name} />
+        <IconButton sx={{ marginLeft: '20px' }}>
+          <EditIcon />
+        </IconButton>
+
+        {idx > 0 && (
+          <Delete
+            name={component.name}
+            idx={idx}
+            canDelete={childrenNum === 0}
+          />
+        )}
+      </Box>
+
       {selected && <ParentSelector childIdx={idx} />}
     </ListItemButton>
   );
 }
 
-function ParentSelector({ childIdx }) {
-  const components = useSelector((state) => state.design.components);
-  const dispatch = useDispatch();
-  const parent = components[childIdx].parent;
-
-  const name = parent ? components[parent].name : 'MainContainer';
-  const index = parent ? parent : 0;
-
-  const [parentValue, setParentValue] = useState(
-    JSON.stringify({ name, index })
-  );
-  if (childIdx > 0) {
-    return (
-      <TextField
-        select
-        key={childIdx}
-        label='parent'
-        name='parent'
-        value={parentValue}
-        onChange={(e) => {
-          const parentIdx = JSON.parse(e.target.value).index;
-          setParentValue(e.target.value);
-          dispatch(setParent({ childIdx, parentIdx }));
-        }}
-      >
-        {components.map((item, i) =>
-          i !== childIdx ? (
-            <MenuItem
-              key={i}
-              value={JSON.stringify({ name: item.name, index: i })}
-            >
-              {item.name + ', ' + i}
-            </MenuItem>
-          ) : null
-        )}
-      </TextField>
-    );
-  } else
-    return (
-      <Button
-        onClick={() =>
-          dispatch(
-            setMessage({
-              severity: 'error',
-              text: "'MainContaienr' has to be the root component",
-            })
-          )
+function Delete({ name, idx, canDelete }) {
+  const message = canDelete
+    ? {
+        severity: 'success',
+        text: 'Successfully removed a component ' + name,
+      }
+    : {
+        severity: 'error',
+        text: `Component ${name} has children. Failed to remove`,
+      };
+  return (
+    <IconButton
+      onClick={() => {
+        if (canDelete) {
+          dispatch(removeComponent(idx));
         }
-      >
-        <TextField
-          disabled
-          id='parent'
-          label='parent'
-          defaultValue='null'
-          variant='standard'
-        />
-      </Button>
-    );
+        dispatch(setMessage(message));
+      }}
+    >
+      <DeleteIcon />
+    </IconButton>
+  );
 }
