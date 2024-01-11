@@ -10,6 +10,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { addComponent, setParent } from '../utils/reducers/designSlice';
 import { setMessage } from '../utils/reducers/appSlice';
+import { Button } from '@mui/material';
 
 export default function WorkspaceLeft() {
   const components = useSelector((state) => state.design.components);
@@ -98,39 +99,58 @@ function ParentSelector({ childIdx }) {
   const components = useSelector((state) => state.design.components);
   const dispatch = useDispatch();
   const parent = components[childIdx].parent;
+
+  const name = parent ? components[parent].name : 'MainContainer';
+  const index = parent ? parent : 0;
+
   const [parentValue, setParentValue] = useState(
-    parent
-      ? JSON.stringify({ name: components[parent].name, index: parent })
-      : 'null'
+    JSON.stringify({ name, index })
   );
-  return (
-    <TextField
-      select
-      key={childIdx}
-      label='parent'
-      name='parent'
-      value={parentValue}
-      onChange={(e) => {
-        if (e.target.value !== 'null') {
+  if (childIdx > 0) {
+    return (
+      <TextField
+        select
+        key={childIdx}
+        label='parent'
+        name='parent'
+        value={parentValue}
+        onChange={(e) => {
           const parentIdx = JSON.parse(e.target.value).index;
           setParentValue(e.target.value);
           dispatch(setParent({ childIdx, parentIdx }));
-        } else {
-          setParentValue('null');
+        }}
+      >
+        {components.map((item, i) =>
+          i !== childIdx ? (
+            <MenuItem
+              key={i}
+              value={JSON.stringify({ name: item.name, index: i })}
+            >
+              {item.name + ', ' + i}
+            </MenuItem>
+          ) : null
+        )}
+      </TextField>
+    );
+  } else
+    return (
+      <Button
+        onClick={() =>
+          dispatch(
+            setMessage({
+              severity: 'error',
+              text: "'MainContaienr' has to be the root component",
+            })
+          )
         }
-      }}
-    >
-      {components.map((item, i) =>
-        i !== childIdx ? (
-          <MenuItem
-            key={i}
-            value={JSON.stringify({ name: item.name, index: i })}
-          >
-            {item.name + ', ' + i}
-          </MenuItem>
-        ) : null
-      )}
-      <MenuItem value={'null'}>null</MenuItem>
-    </TextField>
-  );
+      >
+        <TextField
+          disabled
+          id='parent'
+          label='parent'
+          defaultValue='null'
+          variant='standard'
+        />
+      </Button>
+    );
 }
