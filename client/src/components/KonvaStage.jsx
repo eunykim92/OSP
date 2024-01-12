@@ -24,6 +24,7 @@ const KonvaStage = ({ userImage }) => {
     const dispatch = useDispatch();
     const components = useSelector(state => state.design.components);
     console.log('this is components from KonvaStage', components);
+    const selectedComponent = useSelector(state => state.design.selectedComponent);
 
     // imageWidth and imageHeight calculated based on the natural size of the image and the maxWidth. height is adjusted to maintain the aspect ratio
     let imageWidth = maxWidth;
@@ -35,53 +36,80 @@ const KonvaStage = ({ userImage }) => {
         imageHeight = image.height;
     };
 
-    // runs whenever there's a change in the components or rectangles array. makes sure there's a rectangle associated with each component
+    console.log('this is imageWidth and imageHeight', imageWidth, imageHeight);
+
+    // runs whenever there's a change in the components makes sure there's a rectangle associated with each component
     useEffect(() => {
         console.log('useEffect hit for components update');
-        // using a function inside setRectangles to access the current state instead of using 'rectangles' directly - caused closure problems
         setRectangles(currentRectangles => {
-            // iterate over each component in the components array
-            const newRectangles = components.map(component => {
-                // for each component, find a corresponding rectangle in the rectangles array with a matching key
+            return components.map((component, index) => {
                 const existingRectangle = currentRectangles.find(rect => rect.key === component.name);
-                // return the existing rectangle if found or create a new rectangle
-                return existingRectangle || {
-                    x: 0, y: 0, width: 100, height: 100, key: component.name
+
+                // if it's the first component, make the rectangle match the image
+                if (index === 0) {
+                    return {
+                        ...existingRectangle, // spread the existing properties
+                        width: imageWidth,
+                        height: imageHeight,
+                        key: component.name,
+                        isResizable: false
+                    };
+                }
+                // for subsequent components, keep them as they are or create new ones
+                return existingRectangle ||  {
+                    x: 0, y: 0, width: 100, height: 100, key: component.name, isResizable: true
                 };
             });
-            return newRectangles;
-        })
-    }, [components]);
+        });
+    }, [components, image, imageWidth, imageHeight]);
 
-    // use effect to update the transformer to wrap around the selected rectangle when 'selectedId' or 'rectangles' change
+    // use effect to update the transformer to wrap around the selected rectangle 
     useEffect(() => {
-        // check if selectedId is set to a rectangle
-        if (selectedId) {
-            console.log('useEffect hit for transformer update');
-            console.log('this is selectedId to update the transformer', selectedId);
-            // Find the selected rectangle and update the transformer
-            const selectedRect = rectangles.find(r => r.key === selectedId);
-            console.log('this is the selectedRect', selectedRect);
-            // check if selected rectangle is found and its node reference exists
-            // ?. is optional chaining - helps prevent runtime errors when trying to access a property on null or undefined
-            if (selectedRect?.node) {
-                console.log('selected rectangle is found with its node ref', selectedRect, selectedRect.node);
-                // update the transformer to wrap around the rectangle
+        console.log(`Component selected: ${selectedComponent}`);
+        // Find the selected rectangle and update the transformer
+        const selectedRect = rectangles.find(r => r.key === selectedComponent);
+        console.log('this is trRef in useEffect', trRef);
+        console.log('Selected rectangle', selectedRect);
+        // check if a rectangle is selected and trRef is valid
+        if (selectedRect && trRef.current) {
+            // check if the rectangl is resizable
+            if (selectedRect.isResizable) {
+                // attach the transformer to it (to resize)
                 trRef.current.nodes([selectedRect.node]);
-                // redraw the layer to update the canvas while the transformer changes
-                trRef.current.getLayer().batchDraw();
+            } else {
+                // clear the transformer nodes
+                trRef.current.nodes([]);
             }
+            // redraw the layer to update the canvas with transformer changes
+            trRef.current.getLayer().batchDraw();
+            // update the state with the rectangles id
+            selectShape(selectedRect.key);
+        } else if (trRef.current) {
+            trRef.current.nodes([]);
+            trRef.current.getLayer().batchDraw();
+            selectShape(null);
         }
-    }, [selectedId]); // originally had rectangles in the array too
+    }, [selectedComponent, rectangles]); // originally had selectedId in the array too
+
+    // used to automatically select the latest component added
+    useEffect(() => {
+        if (components.length > 0) {
+            const latestComponent = components[components.length - 1].name;
+            dispatch(selectComponent(latestComponent));
+        }
+    }, [components, dispatch]);
 
     // selects a rectangle when it's clicked and prevents event propagation
     const handleRectClick = (e, rectKey) => {
         // prevent stage from deselecting the shape
         e.cancelBubble = true;
-        // set selectedId state to the id of the clicked rectangle
-        selectShape(rectKey);
-        // dispatch action to updated the selected component in the global state
-        dispatch(selectComponent(rectKey));
+        console.log(`Rectangle clicked: ${rectKey}`);
+        if (selectedId !== rectKey) {
+            // set selectedId state to the id of the clicked rectangle
+            selectShape(rectKey);
+            // dispatch action to updated the selected component in the global state
+            dispatch(selectComponent(rectKey));
+        }
     };
 
     return (
@@ -104,6 +132,7 @@ const KonvaStage = ({ userImage }) => {
                 )}
                 {/* map over the entire rectangles array, creating a new Rect component for each rectangle */}
                 {rectangles.map((rect, i) => (
+                    <React.Fragment key={i}>
                     <Rect
                         // unique identifier for each element. set to the index of the map function
                         key={i}
@@ -118,28 +147,24 @@ const KonvaStage = ({ userImage }) => {
                         // stoke prop sets the color of the rectangle's border
                         stroke="black"
                         // property allows the rectangles to be draggable on the canvas
-                        draggable // ={selectedId === rect.key}
+                        draggable={rect.isResizable} // ={selectedId === rect.key}
                         // event handler for interactions with the rectangles
                         // handle clicks and taps (for touch devices) on a rectangle
                         onClick={(e) => handleRectClick(e, rect.key)}
                         onTap={(e) => handleRectClick(e, rect.key)}
                         // called when a rectangle is dragged and released (mouse up after dragging)
                         onDragEnd={(e) => {
-                            // create a shallow copy of the 'rectangles' array for immutably updating the array
-                            const updatedRectangles = rectangles.slice();
-                            // update the position of the dragged rectangle. takes thee existing rectangle properties and updates the x and y coordinates to the new position after dragging (e.target.x(), x.target.y())
-                            updatedRectangles[i] = {
-                                ...rect,
-                                x: e.target.x(),
-                                y: e.target.y(),
-                            };
-                            // update the state with the new array of rectangles
+                            // create a copy of the current rectangles array
+                            const updatedRectangles = [...rectangles];
+                            // update the position of the rectangle that was dragged to its new x and y coordinates
+                            updatedRectangles[i] = { ...rect, x: e.target.x(), y: e.target.y() };
+                            // set the rectangle state with the new updated array
                             setRectangles(updatedRectangles);
                         }}
                         // triggered when a transformation (resizing) applied to a rectangle ends
                         onTransformEnd={(e) => {
                             // create a shallow copy of the 'rectangles' array
-                            const updatedRectangles = rectangles.slice();
+                            const updatedRectangles = [...rectangles];
                             // rectangles size is updated according to the transformation, similar to onDragEnd. width and height are set based on the transformed dimensions. 
                             updatedRectangles[i] = {
                                 ...rect,
@@ -159,14 +184,9 @@ const KonvaStage = ({ userImage }) => {
                             rect.node = node;
                         }}
                     />
+                </React.Fragment>
                 ))}
-                {/* conditionally renders a Transformer component if 'selectedId' is set */}
-                {selectedId && 
-                <Transformer 
-                    ref={trRef}
-                    rotateEnabled={false}
-                />
-                }
+                <Transformer ref={trRef} rotateEnabled={false} />
             </Layer>
         </Stage>
     )

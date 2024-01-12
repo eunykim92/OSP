@@ -12,21 +12,33 @@ import EditIcon from '@mui/icons-material/Edit';
 import ParentSelector from './userInputs/ParentSelector';
 import AddNewComponent from './userInputs/AddNewComponent';
 import ComponentEditor from './userInputs/ComponentEditor';
+import { MUIColorInput } from 'mui-color-input';
 
 export default function WorkspaceLeft() {
   const [selectedIdx, setSelectedIdx] = useState(null);
   const components = useSelector((state) => state.design.components);
   console.log('components in WorkspaceLeft: ', components);
   // need this to use in KonvaStage
-  const selectedComponent = useSelector(state => state.design.selectComponent);
+  const selectedComponent = useSelector(state => state.design.selectedComponent);
+  console.log('current selected component in workspaceLeft', selectedComponent)
 
   // updated selectedIdx based on the selectedComponent from the redux state
   useEffect(() => {
+    console.log(`Selected component from Redux in useEffect: ${selectedComponent}`);
+    // find the index of the component that matches the selectedComponent
     const idx = components.findIndex(c => c.name === selectedComponent);
-    // if (idx !== -1) {
-    //   setSelectedIdx(idx);
-    // }
-    setSelectedIdx(idx);
+    console.log(`this is the idx found from the useEffect in workspaceLeft: ${idx}`);
+
+    if (idx !== -1) {
+      setSelectedIdx(idx);
+      console.log('WorkspaceLeft useEffect: selectedIdx updated to', idx);
+    } else {
+      console.log('Selected component not found in the components array');
+      setSelectedIdx(null);
+    }
+    // // update the selectedIdx state with the index found
+    // setSelectedIdx(idx);
+    // console.log('WorkspaceLeft useEffect: selectedIdx updated to', idx);
   }, [selectedComponent, components]);
 
 
@@ -51,10 +63,12 @@ export default function WorkspaceLeft() {
 }
 
 function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
+  console.log(`ComponentDisplay render: ${component.name}, selected: ${selected}`);
   const dispatch = useDispatch();
   const childrenNum = useSelector((state) => state.design.components).filter(
     (item) => item.parent === idx
   ).length;
+  const [color, setColor] = useState('#fff');
 
   const onClickHandler = () => {
     handleListItemClick(idx);

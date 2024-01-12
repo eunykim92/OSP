@@ -59,6 +59,7 @@ const designSlice = createSlice({
     // i added this
     selectComponent: (state, action) => {
       state.selectedComponent = action.payload;
+      console.log('this is selectComponent once handleRect dispatches', action.payload);
     },
     updateComponent: (state, action) => {
       const { idx, updatedComponent } = action.payload;
