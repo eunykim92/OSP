@@ -7,28 +7,23 @@ const addComponents = async (req, res, next) => {
   console.log(components);
 
   const root = components[0];
-  const rootProps = {};
-  root.props.forEach(({ key, value }) => (rootProps[key] = value));
-  const rootStyle = {};
-  root.styles.forEach(({ key, value }) => (rootStyle[key] = value));
 
   try {
     components[0].id = await db
       .query(
-        'INSERT INTO components (design_id, name, z_index, props, style) ' +
-          'VALUES ($1, $2, $3, $4, $5) ' +
+        'INSERT INTO components (design_id, name, z_index, props, styles, hooks) ' +
+          'VALUES ($1, $2, $3, $4, $5, $6) ' +
           'RETURNING *;',
         [
           designId,
           root.name,
           root.z_index,
-          JSON.stringify(rootProps),
-          JSON.stringify(rootStyle),
+          JSON.stringify(root.props),
+          JSON.stringify(root.styles),
+          JSON.stringify(root.hooks),
         ]
       )
       .then((data) => data.rows[0]._id);
-
-    // console.log(components[0]);
 
     const stack = [0];
     while (stack.length > 0) {
@@ -36,11 +31,8 @@ const addComponents = async (req, res, next) => {
       const parentId = components[parentIndex].id;
       const children = components.filter((item) => item.parent === parentId);
       const rows = children.map((item) => {
-        const { name, x_position, y_position, z_index } = item;
-        const props = {};
-        item.props.forEach(({ key, value }) => (props[key] = value));
-        const style = {};
-        item.styles.forEach(({ key, value }) => (style[key] = value));
+        const { name, x_position, y_position, z_index, props, styles, hooks } =
+          item;
         return [
           designId,
           parentId,
@@ -48,8 +40,7 @@ const addComponents = async (req, res, next) => {
           x_position,
           y_position,
           z_index,
-          JSON.stringify(props),
-          JSON.stringify(style),
+          ...[props, styles, hooks].map((item) => JSON.stringify(item)),
         ];
       });
 
@@ -58,8 +49,8 @@ const addComponents = async (req, res, next) => {
           child.id = await db
             .query(
               'INSERT INTO components ' +
-                '(design_id, parent_id, name, x_position, y_position, z_index, props, style) ' +
-                'VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ' +
+                '(design_id, parent_id, name, x_position, y_position, z_index, props, styles, hooks) ' +
+                'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ' +
                 'RETURNING *;',
               rows[i]
             )
@@ -81,4 +72,19 @@ const addComponents = async (req, res, next) => {
   }
 };
 
-module.exports = { addComponents };
+const getComponents = (req, res, next) => {
+  const designId = req.params.designId;
+  return db
+    .query('SELECT * FROM components WHERE design_id = $1;', [designId])
+    .then((data) => (res.locals.components = data.rows))
+    .then(() => next())
+    .catch((err) =>
+      next({
+        log:
+          'Express error handler caught componentController.getComponents middleware error' +
+          err,
+        message: { err: 'getComponents: ' + err },
+      })
+    );
+};
+module.exports = { addComponents, getComponents };

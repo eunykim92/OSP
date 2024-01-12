@@ -15,7 +15,7 @@ router.get('/logout', cookieController.removeCookie, (req, res) => {
 
 router.use('/login', loginRouter);
 router.use('/signup', signupRouter);
-router.use('/designs', designsRouter);
+router.use('/designs', cookieController.decryptCookie, designsRouter);
 
 router.get(
   '/user',

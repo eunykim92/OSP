@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useDebugValue, useEffect, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import Cookies from 'js-cookie';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -7,6 +7,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
 import TopBar from './components/TopBar';
 import MainContainer from './components/MainContainer';
+import { getDesigns } from './utils/fetchRequests';
+import { setUserDesigns } from './utils/reducers/appSlice';
+import { useDispatch } from 'react-redux';
 
 export default function App() {
   const sessionID = Cookies.get('sessionID');
@@ -15,11 +18,15 @@ export default function App() {
     return;
   }
   const { getUser } = useAuth();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         await getUser();
+        const designs = await getDesigns();
+        console.log(designs);
+        dispatch(setUserDesigns(designs));
       } catch (error) {
         console.error('Error fetching user data:', error);
       }

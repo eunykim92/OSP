@@ -13,8 +13,8 @@ export default function Workspace() {
         <WorkspaceLeft />
       </Box>
       <Box gridColumn='span 8'>
-        <img src={userImage} style={{ maxWidth: '100%' }} />
-        {/* {userImage && <KonvaStage userImage={userImage} />} */}
+        {/* <img src={userImage} style={{ maxWidth: '100%' }} /> */}
+        {userImage && <KonvaStage userImage={userImage} />}
       </Box>
       <Box gridColumn='span 2'>
         <WorkspaceRight />
