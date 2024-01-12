@@ -6,6 +6,7 @@ import { setMessage } from '../../utils/reducers/appSlice';
 import TextField from '@mui/material/TextField';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import IconButton from '@mui/material/IconButton';
+import isValidReactComponentName from '../../utils/isValidReactComponentName';
 
 const emptyNameErr = {
   severity: 'error',
@@ -31,8 +32,8 @@ export default function AddNewComponent({ setSelectedIdx }) {
       onSubmit={(e) => {
         e.preventDefault();
         const name = e.target.newComponent.value;
-        if (name.length > 0 && name[0] === name[0].toUpperCase()) {
-          dispatch(addComponent(e.target.newComponent.value));
+        if (isValidReactComponentName(name)) {
+          dispatch(addComponent(name));
           dispatch(setMessage(successMess));
           setSelectedIdx(components.length);
         } else {
