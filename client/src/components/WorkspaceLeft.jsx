@@ -20,8 +20,6 @@ export default function WorkspaceLeft() {
   const [selectedIdx, setSelectedIdx] = useState(null);
   const components = useSelector((state) => state.design.components);
   console.log('components in WorkspaceLeft: ', components);
-
-  const dispatch = useDispatch();
   // need this to use in KonvaStage
   const selectedComponent = useSelector(
     (state) => state.design.selectComponent

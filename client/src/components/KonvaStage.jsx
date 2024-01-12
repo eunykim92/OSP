@@ -37,32 +37,34 @@ const KonvaStage = ({ userImage }) => {
 
     // runs whenever there's a change in the components or rectangles array. makes sure there's a rectangle associated with each component
     useEffect(() => {
-        console.log('useEffect hit');
-        console.log('Components', components);
-        console.log('Rectangles before update', rectangles);
-        // iterate over each component in the components array
-        const newRectangles = components.map(component => (
-            // for each component, find a corresponding rectangle in the rectangles array with a matching key
-            // if rectangle is found, include the rectangle in the new array of rectangles or create a new rectangle
-            rectangles.find(rect => rect.key === component.name) || {
-                x: 0, y: 0, width: 100, height: 100, key: component.name
-            }
-        ));
-        // update rectangles array with new array of rectangles
-        setRectangles(newRectangles);
-        console.log('set new Rectangle', newRectangles);
-    }, [components, rectangles]);
+        console.log('useEffect hit for components update');
+        // using a function inside setRectangles to access the current state instead of using 'rectangles' directly - caused closure problems
+        setRectangles(currentRectangles => {
+            // iterate over each component in the components array
+            const newRectangles = components.map(component => {
+                // for each component, find a corresponding rectangle in the rectangles array with a matching key
+                const existingRectangle = currentRectangles.find(rect => rect.key === component.name);
+                // return the existing rectangle if found or create a new rectangle
+                return existingRectangle || {
+                    x: 0, y: 0, width: 100, height: 100, key: component.name
+                };
+            });
+            return newRectangles;
+        })
+    }, [components]);
 
     // use effect to update the transformer to wrap around the selected rectangle when 'selectedId' or 'rectangles' change
     useEffect(() => {
         // check if selectedId is set to a rectangle
         if (selectedId) {
+            console.log('useEffect hit for transformer update');
             console.log('this is selectedId to update the transformer', selectedId);
             // Find the selected rectangle and update the transformer
             const selectedRect = rectangles.find(r => r.key === selectedId);
             console.log('this is the selectedRect', selectedRect);
             // check if selected rectangle is found and its node reference exists
-            if (selectedRect && selectedRect.node) {
+            // ?. is optional chaining - helps prevent runtime errors when trying to access a property on null or undefined
+            if (selectedRect?.node) {
                 console.log('selected rectangle is found with its node ref', selectedRect, selectedRect.node);
                 // update the transformer to wrap around the rectangle
                 trRef.current.nodes([selectedRect.node]);
@@ -70,7 +72,7 @@ const KonvaStage = ({ userImage }) => {
                 trRef.current.getLayer().batchDraw();
             }
         }
-    }, [selectedId, rectangles]);
+    }, [selectedId]); // originally had rectangles in the array too
 
     // selects a rectangle when it's clicked and prevents event propagation
     const handleRectClick = (e, rectKey) => {
