@@ -5,13 +5,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { reset } from '../utils/reducers/appSlice';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import UserDesigns from './UserDesigns';
+import Home from './HomePage';
 
 export default function MainContainer() {
-  const message = useSelector((state) => state.app.message);
+  const { message, page } = useSelector((state) => state.app);
   const dispatch = useDispatch();
   return (
     <Container>
-      <HorizontalStepper />
+      {page === 'NEW_DESIGN' && <HorizontalStepper />}
+      {page === 'HOME' && <Home />}
+      {page === 'PAST_DESIGNS' && <UserDesigns />}
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={Boolean(message)}

@@ -8,13 +8,20 @@ import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Divider from '@mui/material/Divider';
-import { Label } from '@mui/icons-material';
+import { useDispatch } from 'react-redux';
+import { goToPage } from '../utils/reducers/appSlice';
 
 export default function SideDrawer({ drawerOpen, setDrawerOpen }) {
   const [value, setValue] = useState(0);
+  const dispatch = useDispatch();
 
   return (
-    <Drawer sx={{ width: 200 }} anchor='left' open={drawerOpen}>
+    <Drawer
+      sx={{ width: 200 }}
+      anchor='left'
+      open={drawerOpen}
+      onClose={() => setDrawerOpen(false)}
+    >
       <Button onClick={() => setDrawerOpen(false)}>
         <ChevronLeftIcon />
       </Button>
@@ -27,9 +34,21 @@ export default function SideDrawer({ drawerOpen, setDrawerOpen }) {
         aria-label='Vertical tabs example'
         sx={{ borderRight: 1, borderColor: 'divider' }}
       >
-        <Tab icon={<AddPhotoAlternateIcon />} label='New Design' />
-        <Tab icon={<HomeIcon />} label='Home' />
-        <Tab icon={<BackupTableIcon />} label='Past Desgins' />
+        <Tab
+          icon={<AddPhotoAlternateIcon />}
+          label='New Design'
+          onClick={() => dispatch(goToPage('NEW_DESIGN'))}
+        />
+        <Tab
+          icon={<HomeIcon />}
+          label='Home'
+          onClick={() => dispatch(goToPage('HOME'))}
+        />
+        <Tab
+          icon={<BackupTableIcon />}
+          label='Past Desgins'
+          onClick={() => dispatch(goToPage('PAST_DESIGNS'))}
+        />
       </Tabs>
     </Drawer>
   );

@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const cookieController = require('../controllers/cookieController');
 const imageController = require('../controllers/imageController');
 const designController = require('../controllers/designController');
 const componentController = require('../controllers/componentController');
 
 router.post(
   '/add',
-  cookieController.decryptCookie,
   imageController.uploadImage,
   designController.addDesign,
   componentController.addComponents,
@@ -19,4 +17,13 @@ router.post(
   (req, res) => res.status(200).send({ design_id: res.locals.designId })
 );
 
+router.get('/get', designController.getDesigns, (req, res) =>
+  res.status(200).send(res.locals.designs)
+);
+
+router.get(
+  '/details/:designId',
+  componentController.getComponents,
+  (req, res) => res.status(200).send(res.locals.components)
+);
 module.exports = router;
