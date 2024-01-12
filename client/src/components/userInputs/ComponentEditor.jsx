@@ -61,8 +61,17 @@ export default function ComponentEditor({ idx, open, closeEditor }) {
             styles,
             props,
           };
-          dispatch(updateComponent({ idx, updatedComponent }));
-          closeEditor();
+          if (isValidVariableName(updatedComponent.name)) {
+            dispatch(updateComponent({ idx, updatedComponent }));
+            closeEditor();
+          } else {
+            dispatch(
+              setMessage({
+                severity: 'error',
+                text: 'React component name must start with an uppercase letter.',
+              })
+            );
+          }
         }}
       >
         <NameAndParent idx={idx} name={component.name} />

@@ -5,7 +5,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { removeComponent, selectComponent } from '../utils/reducers/designSlice';
+import {
+  removeComponent,
+  selectComponent,
+} from '../utils/reducers/designSlice';
 import { setMessage } from '../utils/reducers/appSlice';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -36,14 +39,10 @@ export default function WorkspaceLeft() {
       console.log('Selected component not found in the components array');
       setSelectedIdx(null);
     }
-    // // update the selectedIdx state with the index found
-    // setSelectedIdx(idx);
-    // console.log('WorkspaceLeft useEffect: selectedIdx updated to', idx);
   }, [selectedComponent, components]);
 
-
   console.log('components in WorkspaceLeft: ', components);
-  
+
   return (
     <Box>
       <AddNewComponent setSelectedIdx={setSelectedIdx} />
@@ -73,8 +72,7 @@ function ComponentDisplay({ component, idx, handleListItemClick, selected }) {
   const onClickHandler = () => {
     handleListItemClick(idx);
     dispatch(selectComponent(component.name));
-  }
-
+  };
 
   const [openEditor, setOpenEditor] = useState(false);
 

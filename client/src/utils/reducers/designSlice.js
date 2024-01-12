@@ -67,6 +67,15 @@ const designSlice = createSlice({
         i !== idx ? item : Object.assign(item, updatedComponent)
       );
     },
+    resetDesign: (state) => {
+      state = {
+        userImage: null,
+        components: [],
+        created_at: null,
+        // i added this
+        selectedComponent: null,
+      };
+    },
   },
 });
 
@@ -77,6 +86,7 @@ export const {
   removeComponent,
   selectComponent,
   updateComponent,
+  resetDesign,
 } = designSlice.actions;
 
 export default designSlice.reducer;

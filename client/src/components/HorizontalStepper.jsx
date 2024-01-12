@@ -4,11 +4,12 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import UserImageUpload from './UserImageUpload';
 import { useDispatch, useSelector } from 'react-redux';
 import Workspace from './Workspace';
 import { startDesign } from '../utils/reducers/designSlice';
+import SaveDesign from './userInputs/SaveDesign';
+import { nextStep, prevStep, resetStep } from '../utils/reducers/appSlice';
 
 const steps = [
   'Upload your design',
@@ -17,7 +18,7 @@ const steps = [
 ];
 
 export default function HorizontalStepper() {
-  const [activeStep, setActiveStep] = useState(0);
+  const activeStep = useSelector((state) => state.app.activeStep);
   const userImage = useSelector((state) => state.design.userImage);
   const dispatch = useDispatch();
 
@@ -39,11 +40,12 @@ export default function HorizontalStepper() {
       )}
       {activeStep === 0 && <UserImageUpload />}
       {activeStep === 1 && <Workspace />}
+      {activeStep === 2 && <SaveDesign />}
       <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
         <Button
           color='inherit'
           disabled={activeStep === 0}
-          onClick={() => setActiveStep(activeStep - 1)}
+          onClick={() => dispatch(prevStep())}
           sx={{ mr: 1 }}
         >
           Back
@@ -52,9 +54,12 @@ export default function HorizontalStepper() {
 
         <Button
           onClick={() => {
-            setActiveStep(activeStep + 1);
+            dispatch(nextStep());
             if (activeStep === 0 && !userImage) {
               dispatch(startDesign(null));
+            }
+            if (activeStep === steps.length - 1) {
+              dispatch(resetStep());
             }
           }}
         >
